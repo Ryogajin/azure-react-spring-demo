@@ -1,4 +1,4 @@
-name: Deploy Spring Boot (WAR) to Azure App Service
+name: Deploy Spring Boot (WAR) to Azure App Service (Tomcat ROOT)
 
 on:
   push:
@@ -26,16 +26,21 @@ jobs:
         working-directory: backend
         run: mvn -U clean package -DskipTests
 
-      # WARが本当にできているか確認用（重要）
+      # 切り分け：成果物確認
       - name: List target artifacts
         run: ls -al backend/target
 
-      # WARをZIPにまとめる（OneDeploy 400回避）
-      - name: Create deployment zip from WAR
+      # Tomcat が拾う配置にする：deploy/webapps/ROOT.war を作って zip にまとめる
+      - name: Create deployment zip for Tomcat (webapps/ROOT.war)
         run: |
-          cd backend/target
-          ls -1 *.war
-          zip -r app.zip *.war
+          rm -rf deploy
+          mkdir -p deploy/webapps
+          cp backend/target/*.war deploy/webapps/ROOT.war
+          echo "=== deploy/webapps ==="
+          ls -al deploy/webapps
+          cd deploy
+          zip -r app.zip .
+          echo "=== deploy/app.zip ==="
           ls -al app.zip
 
       - name: Deploy ZIP to Azure App Service
@@ -43,4 +48,5 @@ jobs:
         with:
           app-name: "katsu"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: backend/target/app.zip
+          package: deploy/app.zip
+
