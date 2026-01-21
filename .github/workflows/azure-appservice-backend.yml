@@ -1,4 +1,4 @@
-name: Deploy Spring Boot to Azure App Service
+name: Deploy Spring Boot (WAR) to Azure App Service
 
 on:
   push:
@@ -22,13 +22,14 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Build backend (Spring Boot)
+      - name: Build backend (WAR)
         working-directory: backend
         run: mvn -U clean package -DskipTests
 
-      - name: Deploy to Azure App Service
+      - name: Deploy WAR to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: "katsu"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: backend/target/*.jar
+          package: backend/target/*.war
+
