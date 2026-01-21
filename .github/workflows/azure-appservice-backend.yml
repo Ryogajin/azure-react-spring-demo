@@ -29,6 +29,6 @@ jobs:
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "katsu-dhgvh4h2c5ffg0hr"
+          app-name: "katsu"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
           package: backend/target/*.jar
