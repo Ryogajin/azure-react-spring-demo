@@ -26,10 +26,21 @@ jobs:
         working-directory: backend
         run: mvn -U clean package -DskipTests
 
-      - name: Deploy WAR to Azure App Service
+      # WARが本当にできているか確認用（重要）
+      - name: List target artifacts
+        run: ls -al backend/target
+
+      # WARをZIPにまとめる（OneDeploy 400回避）
+      - name: Create deployment zip from WAR
+        run: |
+          cd backend/target
+          ls -1 *.war
+          zip -r app.zip *.war
+          ls -al app.zip
+
+      - name: Deploy ZIP to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: "katsu"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: backend/target/*.war
-
+          package: backend/target/app.zip
