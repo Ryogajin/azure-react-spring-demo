@@ -3,5 +3,5 @@ import App from "./App";
 
 test("renders login screen by default", () => {
   render(<App />);
-  expect(screen.getByText("ログイン")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "ログイン" })).toBeInTheDocument();
 });
