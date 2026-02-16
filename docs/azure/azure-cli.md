@@ -131,8 +131,9 @@ az network private-endpoint create -g "$RG" -n "pe-files" \
   --private-connection-resource-id "$(az storage account show -g "$RG" -n "$ST" --query id -o tsv)" \
   --group-id "file" --connection-name "pec-files"
 
+export FILE_DNS_ZONE_ID="$(az network private-dns zone show -g "$RG" -n "privatelink.file.core.windows.net" --query id -o tsv)"
 az network private-endpoint dns-zone-group create -g "$RG" --endpoint-name "pe-files" -n "zg-files" \
-  --private-dns-zone "privatelink.file.core.windows.net" \
+  --private-dns-zone "$FILE_DNS_ZONE_ID" \
   --zone-name "privatelink.file.core.windows.net"
 ```
 
@@ -161,8 +162,9 @@ az network private-endpoint create -g "$RG" -n "pe-sql" \
   --private-connection-resource-id "$(az sql server show -g "$RG" -n "$SQL_SERVER" --query id -o tsv)" \
   --group-id "sqlServer" --connection-name "pec-sql"
 
+export SQL_DNS_ZONE_ID="$(az network private-dns zone show -g "$RG" -n "privatelink.database.windows.net" --query id -o tsv)"
 az network private-endpoint dns-zone-group create -g "$RG" --endpoint-name "pe-sql" -n "zg-sql" \
-  --private-dns-zone "privatelink.database.windows.net" \
+  --private-dns-zone "$SQL_DNS_ZONE_ID" \
   --zone-name "privatelink.database.windows.net"
 ```
 
@@ -263,7 +265,8 @@ az network application-gateway url-path-map rule create -g "$RG" --gateway-name 
 
 # 既存 rule を消して新しい pathmap rule を作成
 export LISTENER="$(az network application-gateway http-listener list -g "$RG" --gateway-name "$APPGW" --query '[0].name' -o tsv)"
-az network application-gateway rule delete -g "$RG" --gateway-name "$APPGW" -n "rule1"
+export DEFAULT_RULE="$(az network application-gateway rule list -g "$RG" --gateway-name "$APPGW" --query '[0].name' -o tsv)"
+az network application-gateway rule delete -g "$RG" --gateway-name "$APPGW" -n "$DEFAULT_RULE"
 
 az network application-gateway rule create -g "$RG" --gateway-name "$APPGW" -n "rule-path" \
   --rule-type PathBasedRouting --http-listener "$LISTENER" --url-path-map "pathmap"
